@@ -1,0 +1,102 @@
+version: '2'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes : 
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-datalog:/var/lib/zookeeper/log
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      ## il est possibe de monter les volumes dans des chemins définis mais on a des problème de permissions ...
+      #- ./volume/kafka-data:/var/lib/kafka/data # Volume pour la persitance des données Kafka
+      ## Pose problème à cause des ID de cluster... est désormais désactiver.
+      - kafka-data-new:/var/lib/kafka/data # Volume pour la persitance des données Kafka
+      - kafka-logs:/kafka/kafka-logs
+      ## Commande pour effectuer la creation de topic, ne fonctionne pas ici.
+      #- ./create_topic.sh:/usr/local/bin/create_topic.sh # Montre le script
+    #command: ["/bin/sh", "-c", "/usr/local/bin/create_topic.sh"]    
+
+
+  postgresql:
+    image: postgres:17
+    user: postgres # permet de s'assurer que la commande est exectuer par le user postgres dont ont connais le uid / gid
+    environment:
+      POSTGRES_USER: quentin
+      POSTGRES_DB: mydb
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      # il est possibe de monter les volumes dans des chemins définis mais on a des problème de permissions ...
+      #- ./volume/postgres-data:/var/lib/postgresql/data
+      - postgres-data-new:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d # Ajoute ce volume pour exécuter les scripts init
+    ports:
+      - "5433:5432" # Map le port 5432 (port de postgre dans le docker) au port 5433 du l'hôte
+
+  create_topic:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - kafka
+    volumes:
+      - ./create_topic.sh:/usr/local/bin/create_topic.sh # Montre le script
+    command: ["/bin/sh", "-c", "/usr/local/bin/create_topic.sh"]
+
+  python_consumer:
+    image: 'python:3.11'
+    depends_on:
+      - kafka
+      - postgresql
+      - create_topic
+    volumes:
+      - ./python_consumer.sh:/usr/local/bin/python_consumer.sh # Montre le script
+      - ./python_consumer.py:/usr/local/bin/python_consumer.py # Montre le script python
+      - ./requirements.txt:/usr/local/bin/requirements.txt
+      - ./data/postgre_pwd.txt:/usr/local/bin/data/postgre_pwd.txt
+      - python-packages:/usr/local/lib/python3.11/site-packages # volume pour les librairie python
+    command: ["/bin/sh", "-c", "/usr/local/bin/python_consumer.sh"] # Exécuter le script
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: test-topic-init  # Nom du topic passé en variable d'environnement
+      SQL_SERVER : postgresql
+      SQL_PORT : "5432"
+
+
+      
+volumes:
+# driver = local par défaut.
+  kafka-data-new:  # Volume nommé pour Kafka
+    driver: local
+  kafka-logs : 
+    driver: local
+  postgres-data-new:
+    driver: local
+  zookeeper-data:
+    driver : local
+  zookeeper-datalog:
+    driver : local
+  python-packages : 
+    driver : local
+secrets:
+  postgres_password:
+    file: ./data/postgre_pwd.txt
