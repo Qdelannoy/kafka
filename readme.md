@@ -67,12 +67,13 @@ Finalement on peut crééer un topic grâce au commande contenu dans les fichier
 
 # TODO : 
 
-5. Centraliser au maximum les informations sur les variable dans le docker-compose
-4. Connexion à une bdd postgre exitante au lieu d'en crééer une
-3. Sécuriser l'accés aux APIs.
-2. Fixer les version des dépendance installé avec apt-get voir les monters ?
-1. Push git Attention au git-ignore
-6. étude des logs kafka etc pour voir si on peut opti
+- Centraliser au maximum les informations sur les variable dans le docker-compose
+- Connexion à une bdd postgre exitante au lieu d'en crééer une
+- Sécuriser l'accés aux APIs avec Traefik
+- Fixer les version des dépendances installé avec apt-get voir les monters ?
+-Push git Attention au git-ignore
+- étude des logs kafka etc pour voir si on peut opti
+- ajouter la db dans la base de données init
 
 # Erreur rencontré : 
 
