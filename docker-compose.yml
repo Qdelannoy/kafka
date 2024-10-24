@@ -14,12 +14,12 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "${KAFKA_PORT}:${KAFKA_PORT}"
+      - "${KAFKA_PORT_LOCAL}:${KAFKA_PORT_LOCAL}"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:${KAFKA_PORT}
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:${KAFKA_PORT}
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:${KAFKA_PORT_LOCAL}
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:${KAFKA_PORT_LOCAL}
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -37,6 +37,8 @@ services:
   postgresql:
     image: postgres:17
     user: postgres # permet de s'assurer que la commande est exectuer par le user postgres dont ont connais le uid / gid
+    ports : 
+      - "${SQL_PORT_LOCAL}:5432"
     environment:
       POSTGRES_USER: quentin
       POSTGRES_DB: mydb

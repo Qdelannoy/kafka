@@ -1,0 +1,11 @@
+docker-compose-with-topic-creation.yml
+*.png
+*.jpg
+*.jpeg
+/data
+.vscode
+.conda
+__pycache__
+create_topic.bat
+.env
+volume/

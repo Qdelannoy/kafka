@@ -9,6 +9,10 @@ print(ssl.OPENSSL_VERSION)
 print(sys.executable)
 sys.path.append('')
 print("path" , sys.path)
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 # Chemin vers le fichier
 file_path = r"C:\Program Files\psqlODBC\1700\bin\psqlodbc35w.dll"
@@ -21,7 +25,7 @@ else:
 
 # Remplacer par tes informations de connexion
 server = "localhost"
-port = "5433"          # Utilise 5433 si tu as configuré PostgreSQL pour un autre port
+port = os.getenv("SQL_PORT_LOCAL")
 database = "mydb"
 username = "quentin"
 
