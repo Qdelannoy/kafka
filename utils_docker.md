@@ -1,3 +1,13 @@
+# DNS et ip pour les services (conteneur) :
+
+chaque conteneur (service) à sa propre adresse ip relative au réseau qui permet de au conteneur de communiquer les uns avec les autres.
+
+Chacune de ces adresses ip possède un DNS correspondant au nom du conteneur. 
+
+par exemple ici kafka, zoopkeeper etc
+
+
+
 # Commande bash: 
 
 pour retrouver les infos sur les objets <compose>-<service>-<instance> : 
